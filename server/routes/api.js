@@ -36,7 +36,7 @@ router.get('/movies', (req, res) => {
     connection((db) => {
         db.execute(
             `SELECT title, revenue
-            FROM MOVIE
+            FROM LTCARBON.MOVIE
             ORDER BY revenue DESC
             FETCH FIRST 12 ROWS ONLY`,
             []
