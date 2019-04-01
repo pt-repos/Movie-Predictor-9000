@@ -31,6 +31,41 @@ let response = {
     message: null
 };
 
+// Get search bar result for filtered Persons list
+router.get('/persons/:name', (req, res) => {
+  const name = req.params.name; 
+  console.log('name: ' + name);
+  const query = 
+    `SELECT FULLNAME from LTCARBON.PERSON 
+    WHERE UPPER(FULLNAME) LIKE '%`+name.toUpperCase()+`%'
+    FETCH FIRST 5 ROWS ONLY`;
+
+  connection((db) => {
+    db.execute(query,[])
+    .then((persons) => {
+      personsList = [];
+      console.log(persons);
+      for (let person of persons.rows) {
+        personData = {};
+        for (let i = 0; i < persons.metaData.length; i++) {
+          const datapoint = persons.metaData[i];
+          personData[persons.metaData[i].name.toLowerCase()] = person[i];
+        }
+        console.log('personData: ' + personData);
+        personslist.push(personData);
+      }
+      console.log('personsList: ' + personsList);
+      response.data = personslist;
+      res.json(response);
+      console.log('res: ' + res);
+    })
+    .catch((err) => {
+      console.log('err res: ' + res);
+      sendError(err, res);
+    });
+  });
+});
+
 // Get movies
 router.get('/movies', (req, res) => {
     connection((db) => {
