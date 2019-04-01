@@ -361,7 +361,6 @@ router.get('/predict', (req, res) => {
         console.log(req.query.directorName);
         console.log(req.query.releaseMonth);
         db.execute(
-<<<<<<< HEAD
             `SELECT (
 	                SELECT AVG(avg_revenue)
 	                FROM (
@@ -622,23 +621,6 @@ router.get('/predict', (req, res) => {
             {
                 genre_name: { val: req.query.genreName }, actor_name: { val: req.query.actorName },
                 director_name: { val: req.query.directorName }, release_month: { val: req.query.releaseMonth }
-=======
-            `SELECT title, revenue
-            FROM LTCARBON.MOVIE
-            ORDER BY revenue DESC
-            FETCH FIRST 12 ROWS ONLY`,
-            []
-        ).then((movies) => {
-            movielist = [];
-            console.log(movies);
-            for (let movie of movies.rows) {
-                movieData = {};
-                for (let i = 0; i < movies.metaData.length; i++) {
-                    const datapoint = movies.metaData[i];
-                    movieData[datapoint.name.toLowerCase()] = movie[i]
-                }
-                movielist.push(movieData)
->>>>>>> Prefixed table with schema name in SQL query in api.js; added .evn to gitignore
             }
         ).then((result) => {
             response.data = jsonifySQLreturn(result);
