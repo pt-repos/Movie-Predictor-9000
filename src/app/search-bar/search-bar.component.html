@@ -1,31 +1,22 @@
-<!-- <form class="example-form" [formGroup]='personsForm'>
-  <mat-form-field class="example-full-width">
-    <input matInput placeholder="Search.." [matAutocomplete]="auto" formControlName='searchInput'>
-  </mat-form-field>
-  <mat-autocomplete #auto="matAutocomplete">
-      <mat-option *ngIf="isLoading" class="is-loading"><mat-spinner diameter="50"></mat-spinner></mat-option>
-      <ng-container *ngIf="!isLoading">
-          <mat-option *ngFor="let person of filteredList" [value]="person">
-              <span>{{ person.fullName }}</span>
-          </mat-option>
-      </ng-container>
-  </mat-autocomplete>
-</form> -->
-
-<form class="example-form" [formGroup]='usersForm'>
+<div>
+  <form class="example-form">
     <mat-form-field class="example-full-width">
-      <input matInput placeholder="" [matAutocomplete]="auto" formControlName='userInput'>
+      <input type="text" matInput placeholder="Search.." [matAutocomplete]="auto" [formControl]="searchInput">
     </mat-form-field>
-    <!-- <span>Your choice is: {{usersForm.get('userInput').value | json}}</span> -->
-  
-    <!-- <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"> -->
     <mat-autocomplete #auto="matAutocomplete">
-      <mat-option *ngIf="isLoading" class="is-loading"><mat-spinner diameter="50"></mat-spinner></mat-option>
-      <ng-container *ngIf="!isLoading">
-        <mat-option *ngFor="let user of filteredList" [value]="user">
-          <span>{{ user.fullName }}</span>
-          <!-- <small> | ID: {{user.id}}</small> -->
-        </mat-option>
-      </ng-container>
+      <mat-option *ngFor="let option of filteredOptions" [value]="option.fullname">
+        {{ option.fullname }}
+      </mat-option>
     </mat-autocomplete>
   </form>
+</div>
+<!-- <div>
+  <input (keyup)="search($event.target.value)" id="name" placeholder="Search" />
+
+  <ul>
+    <li *ngFor="let option of filteredOptions | async">
+      <button
+      {{option['fullname']}}
+    </li>
+  </ul>
+</div> -->

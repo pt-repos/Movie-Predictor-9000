@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { switchMap, debounceTime, tap, finalize } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { FormControl } from '@angular/forms';
+import { switchMap, debounceTime, startWith } from 'rxjs/operators';
+import { Observable, Subject, of } from 'rxjs';
 import { Person } from '../person';
 import { PersonService } from '../person.service';
 
@@ -13,43 +13,40 @@ import { PersonService } from '../person.service';
 })
 export class SearchBarComponent implements OnInit {
 
-  filteredList: Person[] = [];
-  // personsForm: FormGroup;
-  // isLoading = false;
+  searchInput: FormControl = new FormControl();
+  filteredOptions: Person[];
 
-  // constructor(private fBuilder: FormBuilder, private personService: PersonService) { }
+  constructor(private personService: PersonService) {}
 
-  // ngOnInit() {
-  //   this.personsForm = this.fBuilder.group({
-  //     searchInput: null
-  //   });
-
-  //   this.personsForm
-  //     .get('input')
-  //     .valueChanges
-  usersForm: FormGroup;
-  isLoading = false;
-
-  constructor(private fb: FormBuilder, private personService: PersonService) { }
+  setOptions(options: Person[]): void {
+    this.filteredOptions = options;
+    console.log('this.filteredOptions:');
+    console.log(this.filteredOptions);
+  }
 
   ngOnInit() {
-    this.usersForm = this.fb.group({
-      userInput: null
-    });
-
-    this.usersForm
-      .get('userInput')
-      .valueChanges
+    this.searchInput.valueChanges
       .pipe(
+        startWith(''),
         debounceTime(300),
-        tap(() => this.isLoading = true),
-        switchMap(value => this.personService.getPersons({name: value})
-          .pipe(
-            finalize(() => this.isLoading = false)
-          )
-        )
-      )
-      .subscribe(result => this.filteredList = result);
-      console.log('filteredList: ' + this.filteredList)
+        switchMap(name => this.personService.getPersons({name: name}))
+      ).subscribe(options => this.setOptions(options));
   }
+
+  /* filteredOptions: Observable<Person[]>;
+  private searchText = new Subject<string>();
+
+  constructor(private personService: PersonService) { }
+
+  search(name: string) {
+    this.searchText.next(name);
+  }
+
+  ngOnInit() {
+    this.filteredOptions = this.searchText.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap(name => this.personService.getPersons({name: name}))
+    );
+  } */
 }
