@@ -4,18 +4,21 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { AppComponent } from './app.component';
-import { MoviesComponent } from './movies/movies.component';
-import { MovieDetailComponent } from './movie-detail/movie-detail.component';
 import {
   MatFormFieldModule, MatInputModule,
   MatAutocompleteModule, MatButtonModule,
   MatTableModule
 } from '@angular/material';
+import { RouteReuseStrategy } from '@angular/router';
+
+import { AppComponent } from './app.component';
+import { MoviesComponent } from './movies/movies.component';
+import { MovieDetailComponent } from './movie-detail/movie-detail.component';
 import { AppRoutingModule } from './/app-routing.module';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
 import { PersonProfileComponent } from './person-profile/person-profile.component';
+import { CustomRouteReuseStrategy } from './custom-route-reuse.strategy';
 
 @NgModule({
     declarations: [
@@ -40,7 +43,12 @@ import { PersonProfileComponent } from './person-profile/person-profile.componen
         MatTableModule,
         BrowserAnimationsModule
     ],
-    providers: [],
+    providers: [
+      {
+        provide: RouteReuseStrategy,
+        useClass: CustomRouteReuseStrategy
+      }
+    ],
     bootstrap: [AppComponent]
 })
 export class AppModule { }
