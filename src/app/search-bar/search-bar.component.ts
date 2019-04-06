@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { switchMap, debounceTime, startWith } from 'rxjs/operators';
-import { Observable, Subject, of } from 'rxjs';
 import { Person } from '../person';
 import { PersonService } from '../person.service';
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-search-bar',
@@ -16,37 +15,28 @@ export class SearchBarComponent implements OnInit {
   searchInput: FormControl = new FormControl();
   filteredOptions: Person[];
 
-  constructor(private personService: PersonService) {}
-
-  setOptions(options: Person[]): void {
-    this.filteredOptions = options;
-    console.log('this.filteredOptions:');
-    console.log(this.filteredOptions);
-  }
+  constructor(private personService: PersonService, private router: Router) {}
 
   ngOnInit() {
+    this.getFilteredOptions();
+  }
+
+  getFilteredOptions() {
     this.searchInput.valueChanges
       .pipe(
         startWith(''),
         debounceTime(300),
         switchMap(name => this.personService.getPersons({name: name}))
-      ).subscribe(options => this.setOptions(options));
+      ).subscribe(options => this.filteredOptions = options);
   }
 
-  /* filteredOptions: Observable<Person[]>;
-  private searchText = new Subject<string>();
-
-  constructor(private personService: PersonService) { }
-
-  search(name: string) {
-    this.searchText.next(name);
+  routeToPerson() {
+    if(this.searchInput.value) {
+      this.router.navigateByUrl('/person-profile/' + this.searchInput.value.personid);
+    }
   }
 
-  ngOnInit() {
-    this.filteredOptions = this.searchText.pipe(
-      debounceTime(500),
-      distinctUntilChanged(),
-      switchMap(name => this.personService.getPersons({name: name}))
-    );
-  } */
+  displayFn(person?: Person): string | undefined {
+    return person ? person.fullname : undefined;
+  }
 }

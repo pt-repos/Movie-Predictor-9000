@@ -10,11 +10,12 @@ import { MovieDetailComponent } from './movie-detail/movie-detail.component';
 import {
   MatFormFieldModule, MatInputModule,
   MatAutocompleteModule, MatButtonModule,
-  MatProgressSpinnerModule
+  MatTableModule
 } from '@angular/material';
 import { AppRoutingModule } from './/app-routing.module';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
+import { PersonProfileComponent } from './person-profile/person-profile.component';
 
 @NgModule({
     declarations: [
@@ -22,7 +23,8 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
         MoviesComponent,
         MovieDetailComponent,
         DashboardComponent,
-        SearchBarComponent
+        SearchBarComponent,
+        PersonProfileComponent
     ],
     imports: [
         BrowserModule,
@@ -35,7 +37,7 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
         MatInputModule,
         MatAutocompleteModule,
         MatButtonModule,
-        MatProgressSpinnerModule,
+        MatTableModule,
         BrowserAnimationsModule
     ],
     providers: [],

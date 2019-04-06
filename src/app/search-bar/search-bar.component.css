@@ -60,13 +60,13 @@ h4 {
     min-width: 60px;
   }
 }
-.example-form {
+.search-bar-form {
   min-width: 150px;
   /* max-width: 500px; */
   width: 100%;
 }
-.example-full-width {
-  width: 100%;
+.search-bar-third-width {
+  width: 33%;
 }
 .example-container {
   display: flex;
