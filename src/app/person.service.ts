@@ -91,13 +91,5 @@ export class PersonService {
         map(response => response['data'])
       );
   }
-
-  // getPersons(filter: { name: string }): Observable<string[]> {
-  //   if(!filter.name) {
-  //     return of([]);
-  //   }
-
-  //   return this.http.get('/api/persons', { params: { 'name': filter.name } })
-  //     .pipe(map(result => this.personsList = result.json().data));
-  // }
+  
 }
