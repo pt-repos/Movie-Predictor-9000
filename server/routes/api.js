@@ -79,17 +79,46 @@ router.get('/person', (req, res) => {
 router.get('/person/movies', (req, res) => {
   var query;
   if (req.query.id) {
+    // select movies based on popularity
     query =
-      `SELECT MOVIEID, TITLE, ROLE, REVENUE, AVG(RATING) AS AVG_RATING, RELEASEDATE 
-      FROM USERRATING
-      NATURAL JOIN
+      `SELECT MOVIEID, TITLE, ROLE, RELEASEDATE FROM (
         (SELECT MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY 
         FROM LTCARBON.MOVIE
         NATURAL JOIN LTCARBON.CAST
         WHERE ACTORID = ` + req.query.id + `)
-      GROUP BY (MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY)
-      ORDER BY ROUND(AVG_RATING) DESC, POPULARITY DESC
+        UNION
+        (SELECT MOVIEID, TITLE, 'Director' AS ROLE, REVENUE, RELEASEDATE, POPULARITY 
+        FROM LTCARBON.MOVIE
+        NATURAL JOIN LTCARBON.DIRECTOR
+        WHERE DIRECTORID = ` + req.query.id + `)
+      ) ORDER BY ROUND(POPULARITY) DESC, REVENUE DESC
       FETCH FIRST 5 ROWS ONLY`;
+    
+    // select movies based on user ratings and popularity
+    // query = 
+    //   `SELECT MOVIEID, TITLE, ROLE, REVENUE, AVG_RATING, RELEASEDATE FROM (
+    //     SELECT row_number() over (ORDER BY ROUND(AVG_RATING) DESC, POPULARITY DESC) AS rn, a.* FROM (
+    //       (SELECT MOVIEID, TITLE, ROLE, REVENUE, 
+    //       AVG(RATING) AS AVG_RATING, RELEASEDATE, POPULARITY
+    //       FROM USERRATING
+    //       NATURAL JOIN
+    //         (SELECT MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY 
+    //         FROM LTCARBON.MOVIE
+    //         NATURAL JOIN LTCARBON.CAST
+    //         WHERE ACTORID = ` + req.query.id + `)
+    //       GROUP BY (MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY))
+    //       UNION
+    //       (SELECT MOVIEID, TITLE, 'Director' AS ROLE, REVENUE,
+    //       AVG(RATING) AS AVG_RATING, RELEASEDATE, POPULARITY 
+    //       FROM USERRATING
+    //       NATURAL JOIN
+    //         (SELECT MOVIEID, TITLE, REVENUE, RELEASEDATE, POPULARITY 
+    //         FROM LTCARBON.MOVIE
+    //         NATURAL JOIN LTCARBON.DIRECTOR
+    //         WHERE DIRECTORID = ` + req.query.id + `)
+    //       GROUP BY (MOVIEID, TITLE, REVENUE, RELEASEDATE, POPULARITY))
+    //     ) a
+    //   ) where rn between 1 and 5`;
   }
 
   // console.log(query);
