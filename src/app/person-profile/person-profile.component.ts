@@ -72,6 +72,7 @@ export class PersonProfileComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    // this.topMoviesDataSource.paginator = this.paginator;
     this.person = { personid: -1, fullname: '', gender: '' };
     this.getPerson();
   }
