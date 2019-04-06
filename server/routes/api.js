@@ -91,8 +91,8 @@ router.get('/person/movies', (req, res) => {
         FROM LTCARBON.MOVIE
         NATURAL JOIN LTCARBON.DIRECTOR
         WHERE DIRECTORID = ` + req.query.id + `)
-      ) ORDER BY ROUND(POPULARITY) DESC, REVENUE DESC
-      FETCH FIRST 5 ROWS ONLY`;
+      ) ORDER BY ROUND(POPULARITY) DESC, REVENUE DESC`;
+      // FETCH FIRST 5 ROWS ONLY`;
     
     // select movies based on user ratings and popularity
     // query = 
