@@ -3,7 +3,19 @@
 </div>
 <br />
 <div>
-  <h3>Known for:</h3>
+  <h3>Top Movies:</h3>
+  <br />
+  Select criteria:
+  <mat-radio-group [(ngModel)]="topMoviesCriteria" (change)="setQueryParam($event)">
+    <mat-radio-button value="rating">Rating</mat-radio-button>
+    <mat-radio-button value="revenue">Revenue</mat-radio-button>
+    <mat-radio-button value="popularity">Popularity</mat-radio-button>
+  </mat-radio-group>
+  <br />
+  <div *ngIf="show">
+    showing
+  </div>
+  <br />
   <table mat-table #table [dataSource]="topMoviesDataSource">
     <ng-container matColumnDef="title">
       <th mat-header-cell *matHeaderCellDef> Title </th>
@@ -12,6 +24,14 @@
     <ng-container matColumnDef="role">
       <th mat-header-cell *matHeaderCellDef> Credit </th>
       <td mat-cell *matCellDef="let row"> {{row.role}} </td>
+    </ng-container>
+    <ng-container matColumnDef="revenue" *ngIf="topMoviesCriteria === 'revenue'">
+      <th mat-header-cell *matHeaderCellDef> Revenue </th>
+      <td mat-cell *matCellDef="let row"> {{row.revenue}} </td>
+    </ng-container>
+    <ng-container matColumnDef="avg_rating" *ngIf="topMoviesCriteria === 'rating'">
+      <th mat-header-cell *matHeaderCellDef> Rating </th>
+      <td mat-cell *matCellDef="let row"> {{row.avg_rating}} </td>
     </ng-container>
     <ng-container matColumnDef="releasedate">
       <th mat-header-cell *matHeaderCellDef> ReleaseDate </th>

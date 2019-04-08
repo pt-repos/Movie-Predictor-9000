@@ -35,11 +35,11 @@ export class PersonService {
       );
   }
 
-  getTopMovies(id: string): Observable<any> {
+  getTopMovies(id: string, criteria: string): Observable<any> {
     if (!id) {
       return of();
     }
-    const options = { params: new HttpParams().set('id', id) };
+    const options = { params: new HttpParams().set('id', id).set('criteria', criteria) };
     return this.http.get('api/person/movies', options)
       .pipe(
         map(response => response['data'])

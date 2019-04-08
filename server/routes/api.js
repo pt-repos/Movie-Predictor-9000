@@ -33,6 +33,9 @@ let response = {
 
 // Execute router.get() queries and send the response
 function executeQueryAndRespond(query, params, res) {
+  if (!query) {
+    query = ``;
+  }
   connection((db) => {
     db.execute(query, params)
       .then((entries) => {
@@ -78,47 +81,57 @@ router.get('/person', (req, res) => {
 // Get 
 router.get('/person/movies', (req, res) => {
   var query;
+  console.log('id: ' + req.query.id + ', criteria: ' + req.query.criteria);
   if (req.query.id) {
-    // select movies based on popularity
-    query =
-      `SELECT MOVIEID, TITLE, ROLE, RELEASEDATE FROM (
-        (SELECT MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY 
-        FROM LTCARBON.MOVIE
-        NATURAL JOIN LTCARBON.CAST
-        WHERE ACTORID = ` + req.query.id + `)
-        UNION
-        (SELECT MOVIEID, TITLE, 'Director' AS ROLE, REVENUE, RELEASEDATE, POPULARITY 
-        FROM LTCARBON.MOVIE
-        NATURAL JOIN LTCARBON.DIRECTOR
-        WHERE DIRECTORID = ` + req.query.id + `)
-      ) ORDER BY ROUND(POPULARITY) DESC, REVENUE DESC`;
-      // FETCH FIRST 5 ROWS ONLY`;
-    
     // select movies based on user ratings and popularity
-    // query = 
-    //   `SELECT MOVIEID, TITLE, ROLE, REVENUE, AVG_RATING, RELEASEDATE FROM (
-    //     SELECT row_number() over (ORDER BY ROUND(AVG_RATING) DESC, POPULARITY DESC) AS rn, a.* FROM (
-    //       (SELECT MOVIEID, TITLE, ROLE, REVENUE, 
-    //       AVG(RATING) AS AVG_RATING, RELEASEDATE, POPULARITY
-    //       FROM USERRATING
-    //       NATURAL JOIN
-    //         (SELECT MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY 
-    //         FROM LTCARBON.MOVIE
-    //         NATURAL JOIN LTCARBON.CAST
-    //         WHERE ACTORID = ` + req.query.id + `)
-    //       GROUP BY (MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY))
-    //       UNION
-    //       (SELECT MOVIEID, TITLE, 'Director' AS ROLE, REVENUE,
-    //       AVG(RATING) AS AVG_RATING, RELEASEDATE, POPULARITY 
-    //       FROM USERRATING
-    //       NATURAL JOIN
-    //         (SELECT MOVIEID, TITLE, REVENUE, RELEASEDATE, POPULARITY 
-    //         FROM LTCARBON.MOVIE
-    //         NATURAL JOIN LTCARBON.DIRECTOR
-    //         WHERE DIRECTORID = ` + req.query.id + `)
-    //       GROUP BY (MOVIEID, TITLE, REVENUE, RELEASEDATE, POPULARITY))
-    //     ) a
-    //   ) where rn between 1 and 5`;
+    if (req.query.criteria === 'rating') {
+      query =
+        `SELECT MOVIEID, TITLE, ROLE, REVENUE, ROUND(AVG_RATING, 1) AS AVG_RATING, RELEASEDATE FROM (
+        SELECT row_number() over (ORDER BY ROUND(AVG_RATING, 1) DESC, POPULARITY DESC) AS rn, a.* FROM (
+          (SELECT MOVIEID, TITLE, ROLE, REVENUE, 
+          AVG(RATING) AS AVG_RATING, RELEASEDATE, POPULARITY
+          FROM USERRATING
+          NATURAL JOIN
+            (SELECT MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY 
+            FROM LTCARBON.MOVIE
+            NATURAL JOIN LTCARBON.CAST
+            WHERE ACTORID = ` + req.query.id + `)
+          GROUP BY (MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY))
+          UNION
+          (SELECT MOVIEID, TITLE, 'Director' AS ROLE, REVENUE,
+          AVG(RATING) AS AVG_RATING, RELEASEDATE, POPULARITY 
+          FROM USERRATING
+          NATURAL JOIN
+            (SELECT MOVIEID, TITLE, REVENUE, RELEASEDATE, POPULARITY 
+            FROM LTCARBON.MOVIE
+            NATURAL JOIN LTCARBON.DIRECTOR
+            WHERE DIRECTORID = ` + req.query.id + `)
+          GROUP BY (MOVIEID, TITLE, REVENUE, RELEASEDATE, POPULARITY))
+        ) a
+      ) ORDER BY rn`;
+    }
+    // select movies based on popularity and revenue
+    else {
+      query =
+        `SELECT MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE FROM (
+          (SELECT MOVIEID, TITLE, ROLE, REVENUE, RELEASEDATE, POPULARITY 
+          FROM LTCARBON.MOVIE
+          NATURAL JOIN LTCARBON.CAST
+          WHERE ACTORID = ` + req.query.id + `)
+          UNION
+          (SELECT MOVIEID, TITLE, 'Director' AS ROLE, REVENUE, RELEASEDATE, POPULARITY 
+          FROM LTCARBON.MOVIE
+          NATURAL JOIN LTCARBON.DIRECTOR
+          WHERE DIRECTORID = ` + req.query.id + `)
+        )`;
+
+      if (req.query.criteria === 'revenue') {
+        query += `ORDER BY REVENUE DESC`;
+      }
+      else {
+        query += `ORDER BY ROUND(POPULARITY) DESC, REVENUE DESC`;
+      }
+    }
   }
 
   // console.log(query);
@@ -127,7 +140,7 @@ router.get('/person/movies', (req, res) => {
 
 // Get movies
 router.get('/movies', (req, res) => {
-  
+
   var query =
     `SELECT title, revenue
     FROM LTCARBON.MOVIE

@@ -7,7 +7,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   MatFormFieldModule, MatInputModule,
   MatAutocompleteModule, MatButtonModule,
-  MatTableModule, MatPaginatorModule
+  MatTableModule, MatPaginatorModule,
+  MatRadioModule
 } from '@angular/material';
 import { RouteReuseStrategy } from '@angular/router';
 
@@ -42,6 +43,7 @@ import { CustomRouteReuseStrategy } from './custom-route-reuse.strategy';
         MatButtonModule,
         MatTableModule,
         MatPaginatorModule,
+        MatRadioModule,
         BrowserAnimationsModule
     ],
     providers: [

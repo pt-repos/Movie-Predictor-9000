@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { MatTableDataSource, MatPaginator } from '@angular/material';
+import { MatTableDataSource, MatPaginator, MatRadioChange } from '@angular/material';
 import { PersonService } from '../person.service';
 import { Movie } from '../movie';
 import { Person } from '../person';
@@ -11,7 +11,7 @@ export interface MovieDetail {
   title: string;
   role: string;
   revenue: number;
-  rating: number;
+  avg_rating: number;
   releasedate: string;
 }
 
@@ -26,6 +26,8 @@ export class PersonProfileComponent implements OnInit {
   topMovies: MovieDetail[];
   topMoviesColumns: string[] = ['title', 'role', 'releasedate'];
   topMoviesDataSource: MatTableDataSource<MovieDetail>;
+  topMoviesCriteria: string = 'popularity';
+  show: boolean = false;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -54,13 +56,29 @@ export class PersonProfileComponent implements OnInit {
 
   getTopMovies(): void {
     this.personService
-      .getTopMovies(this.person.personid.toString())
+      .getTopMovies(this.person.personid.toString(), this.topMoviesCriteria)
       .toPromise()
       .then(movies => {
         this.topMovies = movies;
         this.topMoviesDataSource = new MatTableDataSource<MovieDetail>(this.topMovies);
         this.topMoviesDataSource.paginator = this.paginator;
+        this.updateTopMoviesColumns();
       });
+  }
+
+  updateTopMoviesColumns(): void {
+    if (this.topMoviesCriteria === 'rating') {
+      this.topMoviesColumns =  ['title', 'role', 'avg_rating', 'releasedate'];
+    } else if (this.topMoviesCriteria === 'revenue') {
+      this.topMoviesColumns = ['title', 'role', 'revenue', 'releasedate'];
+    } else {
+      this.topMoviesColumns = ['title', 'role', 'releasedate'];
+    }
+  }
+
+  setQueryParam($event: MatRadioChange): void {
+    this.topMoviesCriteria = $event.value;
+    this.getTopMovies();
   }
 
   routeToMovieDetail(row) {
