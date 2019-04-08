@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { MatTableDataSource, MatPaginator, MatRadioChange } from '@angular/material';
-
 import { PersonService } from '../person.service';
 import { Person } from '../person';
 import { Movie } from '../movie';
