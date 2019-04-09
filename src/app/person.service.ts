@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { Person } from './person';
-import { Movie } from './movie';
+import { MovieDetail, Trend } from './person-profile/person-profile.component';
 
 @Injectable({
   providedIn: 'root'
@@ -35,12 +35,23 @@ export class PersonService {
       );
   }
 
-  getTopMovies(id: string, criteria: string): Observable<any> {
+  getTopMovies(id: string, criteria: string): Observable<MovieDetail[]> {
     if (!id) {
       return of();
     }
     const options = { params: new HttpParams().set('id', id).set('criteria', criteria) };
     return this.http.get('api/person/movies', options)
+      .pipe(
+        map(response => response['data'])
+      );
+  }
+
+  getPopularityTrend(id: string): Observable<Trend[]> {
+    if (!id) {
+      return of();
+    }
+    const options = { params: new HttpParams().set('id', id) };
+    return this.http.get('api/person/trends', options)
       .pipe(
         map(response => response['data'])
       );

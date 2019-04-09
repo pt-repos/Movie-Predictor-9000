@@ -11,6 +11,7 @@ import {
   MatRadioModule
 } from '@angular/material';
 import { RouteReuseStrategy } from '@angular/router';
+import { ChartsModule } from 'ng2-charts';
 
 import { AppComponent } from './app.component';
 import { MoviesComponent } from './movies/movies.component';
@@ -44,7 +45,8 @@ import { CustomRouteReuseStrategy } from './custom-route-reuse.strategy';
         MatTableModule,
         MatPaginatorModule,
         MatRadioModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        ChartsModule
     ],
     providers: [
       {

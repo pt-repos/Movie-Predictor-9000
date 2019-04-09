@@ -11,11 +11,6 @@
     <mat-radio-button value="revenue">Revenue</mat-radio-button>
     <mat-radio-button value="popularity">Popularity</mat-radio-button>
   </mat-radio-group>
-  <br />
-  <div *ngIf="show">
-    showing
-  </div>
-  <br />
   <table mat-table #table [dataSource]="topMoviesDataSource">
     <ng-container matColumnDef="title">
       <th mat-header-cell *matHeaderCellDef> Title </th>
@@ -42,6 +37,14 @@
   </table>
   <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
 </div>
+<br />
+<div>
+  <h3>Popularity Trends</h3>
+  <canvas baseChart [chartType]="trendChart.type" [datasets]="trendChart.data" [labels]="trendChart.labels"
+    [legend]="trendChart.legend" [options]="trendChart.options">
+  </canvas>
+</div>
+<br />
 <div>
   <h3>Successful Pairings:</h3>
   <table mat-table #table [dataSource]="">

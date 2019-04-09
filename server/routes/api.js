@@ -33,6 +33,7 @@ let response = {
 
 // Execute router.get() queries and send the response
 function executeQueryAndRespond(query, params, res) {
+  // console.log('query: ' + query);
   if (!query) {
     query = ``;
   }
@@ -48,7 +49,7 @@ function executeQueryAndRespond(query, params, res) {
           responseData.push(data);
         }
         response.data = responseData;
-        console.log(response);
+        // console.log(response);
         res.json(response);
       })
       .catch((err) => {
@@ -58,7 +59,7 @@ function executeQueryAndRespond(query, params, res) {
   });
 };
 
-// Get search bar result for filtered Persons list
+// Get filtered Persons list for search bar
 router.get('/person', (req, res) => {
   var query;
   if (req.query.name) {
@@ -92,10 +93,10 @@ router.get('/person', (req, res) => {
   executeQueryAndRespond(query, [], res);
 });
 
-// Get 
+// Get top Movies
 router.get('/person/movies', (req, res) => {
   var query;
-  console.log('id: ' + req.query.id + ', criteria: ' + req.query.criteria);
+  // console.log('id: ' + req.query.id + ', criteria: ' + req.query.criteria);
   if (req.query.id) {
     // select movies based on user ratings and popularity
     if (req.query.criteria === 'rating') {
@@ -146,6 +147,31 @@ router.get('/person/movies', (req, res) => {
         query += `ORDER BY ROUND(POPULARITY) DESC, REVENUE DESC`;
       }
     }
+  }
+
+  executeQueryAndRespond(query, [], res);
+});
+
+// Get popularity trend
+router.get('/person/trends', (req, res) => {
+  var query;
+  if (req.query.id) {
+    // Avg popularity trent grouped into year periods
+    query =
+      `SELECT ROUND(AVG(POPULARITY), 2) AS POPULARITY,
+      TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5) 
+        || '-' || 
+        TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1)
+        AS PERIOD
+      FROM LTCARBON.MOVIE
+      WHERE MOVIEID IN
+        (SELECT MOVIEID FROM LTCARBON.CAST
+        NATURAL JOIN LTCARBON.DIRECTOR
+        WHERE ACTORID = ` + req.query.id + ` 
+          OR DIRECTORID = ` + req.query.id + `)
+      AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL
+      GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
+      ORDER BY PERIOD`;
   }
 
   executeQueryAndRespond(query, [], res);
