@@ -81,7 +81,7 @@ export class PersonProfileComponent implements OnInit {
     this.getTopMovies();
   }
 
-  routeToMovieDetail(row) {
+  routeToMovieDetail(row): void {
     if (row) {
       console.log(row);
       this.router.navigateByUrl('/detail/' + row.movieid);

@@ -39,7 +39,6 @@ function executeQueryAndRespond(query, params, res) {
   connection((db) => {
     db.execute(query, params)
       .then((entries) => {
-        // console.log(entries);
         responseData = [];
         for (let entry of entries.rows) {
           data = {};
@@ -64,9 +63,25 @@ router.get('/person', (req, res) => {
   var query;
   if (req.query.name) {
     query =
-      `SELECT * FROM LTCARBON.PERSON 
-        WHERE UPPER(FULLNAME) LIKE '%` + req.query.name.toUpperCase() + `%'
-        FETCH FIRST 5 ROWS ONLY`;
+      `WITH filtered_list AS (
+        SELECT * FROM LTCARBON.PERSON 
+        WHERE LOWER(FULLNAME) LIKE '%` + req.query.name.toLowerCase() + `%'
+      )
+      SELECT fl.*, b.POP FROM
+        filtered_list fl
+        JOIN
+        (SELECT ACTORID, SUM(POPULARITY) AS POP FROM
+          (SELECT ACTORID, POPULARITY FROM LTCARBON.MOVIE
+          NATURAL JOIN LTCARBON.CAST
+          WHERE ACTORID IN (SELECT PERSONID FROM filtered_list)
+          UNION
+          SELECT DIRECTORID, POPULARITY AS POP FROM LTCARBON.MOVIE
+          NATURAL JOIN LTCARBON.DIRECTOR
+          WHERE DIRECTORID IN (SELECT PERSONID FROM filtered_list))
+        GROUP BY ACTORID) b
+        ON fl.PERSONID = b.ACTORID
+        ORDER BY b.POP DESC
+      FETCH FIRST 5 ROWS ONLY`;
   }
   else if (req.query.id) {
     query =
@@ -74,7 +89,6 @@ router.get('/person', (req, res) => {
         WHERE PERSONID = ` + req.query.id;
   }
 
-  // console.log('query: ' + query);
   executeQueryAndRespond(query, [], res);
 });
 
@@ -134,7 +148,6 @@ router.get('/person/movies', (req, res) => {
     }
   }
 
-  // console.log(query);
   executeQueryAndRespond(query, [], res);
 });
 
@@ -148,31 +161,6 @@ router.get('/movies', (req, res) => {
     FETCH FIRST 12 ROWS ONLY`;
 
   executeQueryAndRespond(query, [], res);
-  // connection((db) => {
-  //   db.execute(
-  //     `SELECT title, revenue
-  //           FROM LTCARBON.MOVIE
-  //           ORDER BY revenue DESC
-  //           FETCH FIRST 12 ROWS ONLY`,
-  //     []
-  //   ).then((movies) => {
-  //     movielist = [];
-  //     console.log(movies);
-  //     for (let movie of movies.rows) {
-  //       movieData = {};
-  //       for (let i = 0; i < movies.metaData.length; i++) {
-  //         const datapoint = movies.metaData[i];
-  //         movieData[datapoint.name.toLowerCase()] = movie[i]
-  //       }
-  //       movielist.push(movieData)
-  //     }
-  //     response.data = movielist;
-  //     res.json(response);
-  //   })
-  //     .catch((err) => {
-  //       sendError(err, res);
-  //     });
-  // });
 });
 
 module.exports = router;
