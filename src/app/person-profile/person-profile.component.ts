@@ -18,6 +18,11 @@ export interface Pairing {
   num_movies: number;
 }
 
+export interface Trend {
+  popularity: number;
+  period: string;
+}
+
 @Component({
   selector: 'app-person-profile',
   templateUrl: './person-profile.component.html',
@@ -71,7 +76,6 @@ export class PersonProfileComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    // this.topMoviesDataSource.paginator = this.paginator;
     this.person = { personid: -1, fullname: '', gender: '' };
     this.getPerson();
   }
