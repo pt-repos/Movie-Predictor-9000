@@ -33,13 +33,14 @@ let response = {
 
 // Execute router.get() queries and send the response
 function executeQueryAndRespond(query, params, res) {
-  // console.log('query: ' + query);
+  console.log('query: ' + query);
   if (!query) {
     query = ``;
   }
   connection((db) => {
     db.execute(query, params)
       .then((entries) => {
+        console.log('entries: ' + entries.rows);
         responseData = [];
         for (let entry of entries.rows) {
           data = {};
@@ -49,7 +50,7 @@ function executeQueryAndRespond(query, params, res) {
           responseData.push(data);
         }
         response.data = responseData;
-        // console.log(response);
+        console.log(response);
         res.json(response);
       })
       .catch((err) => {
@@ -157,21 +158,64 @@ router.get('/person/trends', (req, res) => {
   var query;
   if (req.query.id) {
     // Avg popularity trent grouped into year periods
+    if (req.query.criteria === 'popularity') {
+      query =
+        `SELECT ROUND(AVG(POPULARITY), 2) AS VALUE,
+        TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5) 
+          || '-' || 
+          TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1)
+          AS PERIOD
+        FROM LTCARBON.MOVIE
+        WHERE MOVIEID IN
+          (SELECT MOVIEID FROM LTCARBON.CAST
+          NATURAL JOIN LTCARBON.DIRECTOR
+          WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)
+        AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL
+        GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
+        ORDER BY PERIOD`;
+    }
+
+    // Avg ratings trend grouped into year periods
+    if (req.query.criteria === 'rating') {
+      query =
+        `SELECT ROUND(AVG(RATING), 2) AS VALUE,
+          TO_CHAR(FLOOR(EXTRACT(YEAR FROM to_date('1970-01-01', 'YYYY-MM-DD') + VIEWDATE / 86400)/5) * 5) 
+          || '-' || 
+          TO_CHAR(FLOOR(EXTRACT(YEAR FROM to_date('1970-01-01', 'YYYY-MM-DD') + VIEWDATE / 86400)/5) * 5 + 5 - 1)
+          AS PERIOD
+          FROM USERVIEW
+          NATURAL JOIN USERRATING
+          WHERE MOVIEID IN
+            (SELECT DISTINCT(MOVIEID) FROM LTCARBON.CAST
+            NATURAL JOIN LTCARBON.DIRECTOR
+            WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)
+          GROUP BY FLOOR(EXTRACT(YEAR FROM to_date('1970-01-01', 'YYYY-MM-DD') + VIEWDATE / 86400)/5)
+          ORDER BY PERIOD`;
+    }
+  }
+
+  executeQueryAndRespond(query, [], res);
+});
+
+// Get person's top genres' data
+router.get('/person/genres', (req, res) => {
+  var query;
+  if (req.query.id) {
+    // Avg popularity trent grouped into year periods
     query =
-      `SELECT ROUND(AVG(POPULARITY), 2) AS POPULARITY,
-      TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5) 
-        || '-' || 
-        TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1)
-        AS PERIOD
+      `SELECT GENREID, NAME, SUM(POPULARITY) AS POPULARITY, COUNT(MOVIEID) AS MCOUNT
       FROM LTCARBON.MOVIE
-      WHERE MOVIEID IN
+      NATURAL JOIN LTCARBON.MOVIEGENRE
+      NATURAL JOIN LTCARBON.GENRE
+      WHERE MOVIEID IN 
         (SELECT MOVIEID FROM LTCARBON.CAST
-        NATURAL JOIN LTCARBON.DIRECTOR
-        WHERE ACTORID = ` + req.query.id + ` 
-          OR DIRECTORID = ` + req.query.id + `)
-      AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL
-      GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
-      ORDER BY PERIOD`;
+        WHERE ACTORID = ` + req.query.id + `
+        UNION
+        SELECT MOVIEID FROM LTCARBON.DIRECTOR
+        WHERE DIRECTORID = ` + req.query.id + `)
+      GROUP BY (GENREID, NAME)
+      ORDER BY FLOOR(POPULARITY/5) DESC, MCOUNT DESC
+      FETCH FIRST 5 ROWS ONLY`;
   }
 
   executeQueryAndRespond(query, [], res);
@@ -187,6 +231,75 @@ router.get('/movies', (req, res) => {
     FETCH FIRST 12 ROWS ONLY`;
 
   executeQueryAndRespond(query, [], res);
+});
+
+// Get movie detail
+router.get('/movie/detail', (req, res) => {
+
+  var query;
+  if (req.query.id) {
+    query =
+      `SELECT m.*, a.AVG_RATING FROM
+        (SELECT * FROM LTCARBON.MOVIE
+        WHERE MOVIEID = ` + req.query.id + `) m
+      LEFT OUTER JOIN
+        (SELECT MOVIEID, ROUND(AVG(RATING), 2) AS AVG_RATING FROM PULKIT.USERRATING
+        WHERE MOVIEID = ` + req.query.id + `
+        GROUP BY MOVIEID) a
+      ON m.MOVIEID = a.MOVIEID`;
+  }
+
+  executeQueryAndRespond(query, [], res);
+})
+
+// Get similar movies
+router.get('/movie/similar', (req, res) => {
+
+  // console.log('test: ');
+  // var query =
+  //   `SELECT GENREID FROM LTCARBON.MOVIEGENRE
+  //   WHERE MOVIEID = ` + req.query.id;
+
+  // executeQueryAndRespond(query, [], res);
+  if (req.query.id) {
+    connection((db) => {
+      db.execute(
+        `SELECT GENREID FROM LTCARBON.MOVIEGENRE
+        WHERE MOVIEID = ` + req.query.id,
+        []
+      ).then((entries) => {
+        const genres = entries.rows;
+        console.log('genres: ' + genres);
+        var query = `SELECT MOVIEID, TITLE, RELEASEDATE FROM (`;
+        for (i = 0; i < genres.length; i++) {
+          query += `
+            SELECT MOVIEID, TITLE, POPULARITY, RELEASEDATE FROM LTCARBON.MOVIE
+            NATURAL JOIN LTCARBON.MOVIEGENRE
+            WHERE GENREID = ` + genres[i];
+
+          if (i < genres.length - 1) {
+            query += `
+              INTERSECT`;
+          }
+        }
+        query += `
+          MINUS
+          SELECT MOVIEID, TITLE, POPULARITY, RELEASEDATE FROM LTCARBON.MOVIE
+          NATURAL JOIN LTCARBON.MOVIEGENRE
+          WHERE GENREID NOT IN (` + genres + `)
+          ) WHERE MOVIEID <> `+ req.query.id + `
+          ORDER BY POPULARITY DESC
+          FETCH FIRST 30 ROWS ONLY`;
+
+        console.log('query: ' + query);
+        executeQueryAndRespond(query, [], res);
+      })
+        .catch((err) => {
+          console.log('err res: ' + res);
+          sendError(err, res);
+        });
+    });
+  }
 });
 
 module.exports = router;

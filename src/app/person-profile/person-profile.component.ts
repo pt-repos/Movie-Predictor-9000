@@ -2,22 +2,31 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { MatTableDataSource, MatPaginator, MatRadioChange } from '@angular/material';
+
 import { PersonService } from '../person.service';
 import { Person } from '../person';
+import { Movie } from '../movie';
 
-export interface MovieDetail {
-  movieid: number;
-  title: string;
-  role: string;
-  revenue: number;
-  avg_rating: number;
-  releasedate: string;
-}
+// export interface MovieDetail {
+//   movieid: number;
+//   title: string;
+//   role: string;
+//   revenue: number;
+//   avg_rating: number;
+//   releasedate: string;
+// }
 
 export interface Trend {
-  popularity: number;
+  value: number;
   period: string;
 }
+
+// export interface Genre {
+//   id: number;
+//   name: string;
+//   popularity: number;
+//   mcount: number;
+// }
 
 @Component({
   selector: 'app-person-profile',
@@ -27,17 +36,36 @@ export interface Trend {
 export class PersonProfileComponent implements OnInit {
 
   person: Person;
-  topMovies: MovieDetail[];
+  topMovies: Movie[];
   topMoviesColumns: string[];
-  topMoviesDataSource: MatTableDataSource<MovieDetail>;
+  topMoviesDataSource: MatTableDataSource<Movie>;
   topMoviesCriteria = 'popularity';
+  trendCriteria = 'popularity';
   show = false;
   trendChart = {
     type: 'line',
-    data: [{data: [], label: ''}],
+    data: [{ data: [], label: '', fill: false }],
     labels: [],
-    options: { scaleShowVerticalLines: true, responsive: true },
-    legend: true
+    legend: true,
+    options: {
+      scaleShowVerticalLines: true,
+      responsive: true
+    }
+  };
+  genresChart = {
+    type: 'radar',
+    data: [{ data: [], label: '', fill: true, count: 0 }],
+    labels: [],
+    legend: true,
+    options: {
+      scaleShowVerticalLines: true,
+      responsive: true,
+      scale: {
+        ticks: {
+          beginAtZero: true
+        }
+      }
+    }
   };
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -60,6 +88,7 @@ export class PersonProfileComponent implements OnInit {
       .toPromise()
       .then(person => {
         this.person = person;
+        this.getGenresData();
         this.getTopMovies();
         this.getPopularityTrend();
       });
@@ -71,7 +100,7 @@ export class PersonProfileComponent implements OnInit {
       .toPromise()
       .then(movies => {
         this.topMovies = movies;
-        this.topMoviesDataSource = new MatTableDataSource<MovieDetail>(this.topMovies);
+        this.topMoviesDataSource = new MatTableDataSource<Movie>(this.topMovies);
         this.topMoviesDataSource.paginator = this.paginator;
         this.updateTopMoviesColumns();
       });
@@ -79,10 +108,23 @@ export class PersonProfileComponent implements OnInit {
 
   getPopularityTrend(): void {
     this.personService
-      .getPopularityTrend(this.person.personid.toString())
+      .getPopularityTrend(this.person.personid.toString(), this.trendCriteria)
       .toPromise()
       .then(trend => {
         this.setTrendData(trend);
+      });
+  }
+
+  getGenresData(): void {
+    this.personService
+      .getGenresData(this.person.personid.toString())
+      .toPromise()
+      .then(genres => {
+        genres.forEach((dataPoint) => {
+          this.genresChart.data[0]['data'].push(dataPoint.popularity);
+          this.genresChart.data[0]['label'] = 'popularity';
+          this.genresChart.labels.push(dataPoint.name);
+        });
       });
   }
 
@@ -96,17 +138,37 @@ export class PersonProfileComponent implements OnInit {
     }
   }
 
-  setQueryParam($event: MatRadioChange): void {
+  changeTopMoviesCriteria($event: MatRadioChange): void {
     this.topMoviesCriteria = $event.value;
     this.getTopMovies();
   }
 
-  setTrendData(trend: Trend[]) {
-    trend.forEach((value, index) => {
-        this.trendChart.data[0]['data'].push(value.popularity);
-        this.trendChart.labels.push(value.period);
-      });
+  changeTrendCriteria($event: MatRadioChange): void {
+    this.trendCriteria = $event.value;
+    this.trendChart.data[0]['data'] = [];
+    this.trendChart.labels = [];
+    this.getPopularityTrend();
   }
+
+  setTrendData(trend: Trend[]) {
+    trend.forEach((dataPoint, index) => {
+      this.trendChart.data[0]['data'].push(dataPoint.value);
+      this.trendChart.labels.push(dataPoint.period);
+    });
+  }
+
+  // setTrendData(trend: Trend[]) {
+  //   this.trendChart.data[this.trendChart.count] = { data: [], labels: '', fill: false };
+  //   console.log('count: ' + this.trendChart.count);
+  //   console.log('data: ' + this.trendChart.data[0]);
+  //   trend.forEach((dataPoint, index) => {
+  //     this.trendChart.data[this.trendChart.count]['data'].push(dataPoint.value);
+  //     if (!this.trendChart.labelSet.has(dataPoint.period)) {
+  //       this.trendChart.labels.push(dataPoint.period);
+  //     }
+  //   });
+  //   this.trendChart.count++;
+  // }
 
   routeToMovieDetail(row): void {
     if (row) {

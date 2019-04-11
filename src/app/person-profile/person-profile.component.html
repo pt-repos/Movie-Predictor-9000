@@ -3,10 +3,19 @@
 </div>
 <br />
 <div>
+  <h3>General Stats:</h3>
+  <p>Top Genres:</p>
+  <br />
+  <canvas baseChart [chartType]="genresChart.type" [datasets]="genresChart.data" [labels]="genresChart.labels"
+    [legend]="genresChart.legend" [options]="genresChart.options">
+  </canvas>
+</div>
+<br /> 
+<div>
   <h3>Top Movies:</h3>
   <br />
   Select criteria:
-  <mat-radio-group [(ngModel)]="topMoviesCriteria" (change)="setQueryParam($event)">
+  <mat-radio-group [(ngModel)]="topMoviesCriteria" (change)="changeTopMoviesCriteria($event)">
     <mat-radio-button value="rating">Rating</mat-radio-button>
     <mat-radio-button value="revenue">Revenue</mat-radio-button>
     <mat-radio-button value="popularity">Popularity</mat-radio-button>
@@ -39,7 +48,14 @@
 </div>
 <br />
 <div>
-  <h3>Popularity Trends</h3>
+  <h3>Trends Chart:</h3>
+  <br />
+  Select criteria:
+  <mat-radio-group [(ngModel)]="trendCriteria" (change)="changeTrendCriteria($event)">
+    <mat-radio-button value="rating">Rating</mat-radio-button>
+    <mat-radio-button value="revenue">Revenue</mat-radio-button>
+    <mat-radio-button value="popularity">Popularity</mat-radio-button>
+  </mat-radio-group>
   <canvas baseChart [chartType]="trendChart.type" [datasets]="trendChart.data" [labels]="trendChart.labels"
     [legend]="trendChart.legend" [options]="trendChart.options">
   </canvas>

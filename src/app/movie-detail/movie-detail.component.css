@@ -28,3 +28,6 @@ button:disabled {
   color: #ccc;
   cursor: auto;
 }
+table {
+  width: 100%;
+}
