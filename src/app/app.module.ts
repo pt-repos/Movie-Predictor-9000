@@ -8,7 +8,7 @@ import {
   MatFormFieldModule, MatInputModule,
   MatAutocompleteModule, MatButtonModule,
   MatTableModule, MatPaginatorModule,
-  MatRadioModule
+  MatRadioModule, MatCheckboxModule
 } from '@angular/material';
 import { RouteReuseStrategy } from '@angular/router';
 import { ChartsModule } from 'ng2-charts';
@@ -45,6 +45,7 @@ import { CustomRouteReuseStrategy } from './custom-route-reuse.strategy';
         MatTableModule,
         MatPaginatorModule,
         MatRadioModule,
+        MatCheckboxModule,
         BrowserAnimationsModule,
         ChartsModule
     ],

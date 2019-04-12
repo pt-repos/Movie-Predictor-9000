@@ -10,7 +10,8 @@
     [legend]="genresChart.legend" [options]="genresChart.options">
   </canvas>
 </div>
-<br /> 
+<br />
+<hr>
 <div>
   <h3>Top Movies:</h3>
   <br />
@@ -47,6 +48,7 @@
   <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
 </div>
 <br />
+<hr>
 <div>
   <h3>Trends Chart:</h3>
   <br />
@@ -56,11 +58,57 @@
     <mat-radio-button value="revenue">Revenue</mat-radio-button>
     <mat-radio-button value="popularity">Popularity</mat-radio-button>
   </mat-radio-group>
+  <br />
+  <div *ngIf="trendCriteria === 'rating'">
+    Optional filters:
+    <mat-checkbox [(ngModel)]="chartFilters.filter">Filter</mat-checkbox>
+    <div *ngIf="chartFilters.filter">
+      Age:
+      <form class="example-form">
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Lower" [(ngModel)]="chartFilters.agel" name="lowerAge">
+        </mat-form-field>
+
+        <mat-form-field class="example-full-width">
+          <input matInput placeholder="Upper" [(ngModel)]="chartFilters.ageu" name="upperAge">
+        </mat-form-field>
+      </form>
+      Gender:
+      <mat-radio-group [(ngModel)]="chartFilters.gender">
+        <mat-radio-button value="M">Male</mat-radio-button>
+        <mat-radio-button value="F">Female</mat-radio-button>
+        <mat-radio-button value="">Both</mat-radio-button>
+      </mat-radio-group>
+    </div>
+    <button mat-raised-button color="primary" (click)="updateTrendChart()">Update..</button>
+  </div>
+  <!-- <div *ngIf="chartFilters.filter && chartFilters.age">
+    <input type="text" class="tiny-text" [(ngModel)]="chartFilters.agel" placeholder="Lower age limit" /> &nbsp;
+    <input type="text" class="tiny-text" [(ngModel)]="chartFilters.ageu" placeholder="Upper age limit" />
+  </div> -->
   <canvas baseChart [chartType]="trendChart.type" [datasets]="trendChart.data" [labels]="trendChart.labels"
     [legend]="trendChart.legend" [options]="trendChart.options">
   </canvas>
 </div>
 <br />
+<div>
+  <p>Add Dataset</p>
+  <div>
+    <form class="search-bar-form">
+      <mat-form-field class="search-bar-third-width">
+        <input type="text" matInput placeholder="Search.." [matAutocomplete]="auto" [formControl]="trendChart.form.searchInput">
+      </mat-form-field>
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+        <mat-option *ngFor="let option of trendChart.form.filteredOptions" [value]="option">
+          <span>{{ option.fullname }}</span>
+        </mat-option>
+      </mat-autocomplete>
+    </form>
+    <button mat-raised-button color="primary" (click)="addDataSet()">Search..</button>
+  </div>
+</div>
+<br />
+<hr>
 <div>
   <h3>Successful Pairings:</h3>
   <table mat-table #table [dataSource]="successfulPairings">
