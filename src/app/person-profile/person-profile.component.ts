@@ -24,12 +24,12 @@ export interface Trend {
   period: string;
 }
 
-// export interface Genre {
-//   id: number;
-//   name: string;
-//   popularity: number;
-//   mcount: number;
-// }
+export interface Pairing {
+  fullname: string;
+  pid: number;
+  total_rev: number;
+  num_movies: number;
+}
 
 @Component({
   selector: 'app-person-profile',
