@@ -303,6 +303,36 @@ router.get('/movie/detail', (req, res) => {
   executeQueryAndRespond(query, [], res);
 })
 
+// Get movie's director
+router.get('/movie/detail/director', (req, res) => {
+  var query =
+    `SELECT PERSONID, FULLNAME FROM LTCARBON.PERSON
+    WHERE PERSONID IN 
+      (SELECT DIRECTORID FROM LTCARBON.DIRECTOR
+      WHERE MOVIEID = ` + req.query.id + `)`;
+
+  executeQueryAndRespond(query, [], res);
+})
+
+// Get movie's cast
+router.get('/movie/detail/cast', (req, res) => {
+  var query =
+    `SELECT PERSONID, FULLNAME, ROLE FROM LTCARBON.PERSON
+    JOIN
+      (SELECT ACTORID, ROLE FROM LTCARBON.CAST
+      WHERE MOVIEID = ` + req.query.id + `)
+    ON ACTORID = PERSONID
+    NATURAL JOIN (
+      SELECT ACTORID, SUM(POPULARITY) AS POPULARITY FROM LTCARBON.PERSON
+      JOIN (SELECT ACTORID, MOVIEID FROM LTCARBON.CAST)
+      ON PERSONID = ACTORID
+      NATURAL JOIN (SELECT MOVIEID, POPULARITY FROM LTCARBON.MOVIE)
+      GROUP BY ACTORID)
+    ORDER BY POPULARITY DESC`;
+
+  executeQueryAndRespond(query, [], res);
+})
+
 // Get similar movies
 router.get('/movie/similar', (req, res) => {
 
