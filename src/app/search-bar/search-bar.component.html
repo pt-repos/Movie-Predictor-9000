@@ -1,0 +1,13 @@
+<div>
+  <form class="search-bar-form">
+    <mat-form-field class="search-bar-third-width">
+      <input type="text" matInput placeholder="Search.." [matAutocomplete]="auto" [formControl]="searchInput">
+    </mat-form-field>
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+      <mat-option *ngFor="let option of filteredOptions" [value]="option">
+        <span>{{ option.fullname }}</span>
+      </mat-option>
+    </mat-autocomplete>
+  </form>
+  <button mat-raised-button color="primary" (click)="routeToPerson()">Search..</button>
+</div>
