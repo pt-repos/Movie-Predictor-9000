@@ -158,46 +158,93 @@ router.get('/person/movies', (req, res) => {
 
 // Get popularity trend
 router.get('/person/trends', (req, res) => {
-    var query;
-    if (req.query.id) {
-        // Avg popularity trent grouped into year periods
-        if (req.query.criteria === 'popularity') {
-            query =
-            `SELECT ROUND(AVG(POPULARITY), 2) AS VALUE,
-            TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5)
-            || '-' ||
-            TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1)
-            AS PERIOD
-            FROM LTCARBON.MOVIE
-            WHERE MOVIEID IN
+  var query;
+  if (req.query.id) {
+    // Avg popularity trent grouped into year periods
+    if (req.query.criteria === 'popularity') {
+      query =
+        `SELECT ROUND(AVG(POPULARITY), 2) AS VALUE,
+        TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5) 
+          || '-' || 
+          TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1)
+          AS PERIOD
+        FROM LTCARBON.MOVIE
+        WHERE MOVIEID IN
+          (SELECT MOVIEID FROM LTCARBON.CAST
+          NATURAL JOIN LTCARBON.DIRECTOR
+          WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)
+        AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL
+        GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
+        ORDER BY PERIOD`;
+    }
+    // Avg ratings trend grouped into year periods
+    else if (req.query.criteria === 'rating') {
+      query =
+        `SELECT ROUND(AVG(RATING), 2) AS VALUE,
+        TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5) 
+        || '-' || 
+        TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1) AS PERIOD
+        FROM `;
+
+      
+      if (req.query.filter === 'true') {
+        if (req.query.ageu && req.query.agel) {
+          if (req.query.gender) {
+            query +=
+              `(SELECT MOVIEID, RATING FROM PULKIT.USERRATING
+              NATURAL JOIN PULKIT.MLENSUSER 
+              WHERE YEAROFBIRTH BETWEEN (EXTRACT(YEAR FROM SYSDATE) - ` + req.query.ageu + `)
+              AND (EXTRACT(YEAR FROM SYSDATE) - `+ req.query.agel + `)
+              AND GENDER = '`+ req.query.gender + `')`;
+          }
+          else {
+            query +=
+              `(SELECT MOVIEID, RATING FROM PULKIT.USERRATING
+              NATURAL JOIN PULKIT.MLENSUSER 
+              WHERE YEAROFBIRTH BETWEEN (EXTRACT(YEAR FROM SYSDATE) - ` + req.query.ageu + `)
+              AND (EXTRACT(YEAR FROM SYSDATE) - `+ req.query.agel + `))`;
+          }
+        }
+        else if (req.query.gender) {
+          query += 
+            `(SELECT MOVIEID, RATING FROM PULKIT.USERRATING
+            NATURAL JOIN PULKIT.MLENSUSER 
+            WHERE GENDER = '` + req.query.gender + `')`;
+        }
+      }
+      else {
+        query += ` PULKIT.USERRATING`;
+      }
+      query +=
+        ` NATURAL JOIN 
+          (SELECT MOVIEID, RELEASEDATE FROM LTCARBON.MOVIE
+          WHERE MOVIEID IN
+            (SELECT DISTINCT(MOVIEID) FROM LTCARBON.CAST
+            NATURAL JOIN LTCARBON.DIRECTOR
+            WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)
+            AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL)
+        GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
+        ORDER BY PERIOD`;
+    }
+    // Revenue trend grouped into year {
+    else {
+      query =
+        `SELECT ROUND(AVG(REVENUE)) AS VALUE,
+          TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5) 
+          || '-' || 
+          TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1) AS PERIOD
+          FROM LTCARBON.MOVIE
+          WHERE MOVIEID IN
             (SELECT MOVIEID FROM LTCARBON.CAST
             NATURAL JOIN LTCARBON.DIRECTOR
             WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)
             AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL
-            GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
-            ORDER BY PERIOD`;
-        }
-
-        // Avg ratings trend grouped into year periods
-        if (req.query.criteria === 'rating') {
-            query =
-            `SELECT ROUND(AVG(RATING), 2) AS VALUE,
-            TO_CHAR(FLOOR(EXTRACT(YEAR FROM to_date('1970-01-01', 'YYYY-MM-DD') + VIEWDATE / 86400)/5) * 5)
-            || '-' ||
-            TO_CHAR(FLOOR(EXTRACT(YEAR FROM to_date('1970-01-01', 'YYYY-MM-DD') + VIEWDATE / 86400)/5) * 5 + 5 - 1)
-            AS PERIOD
-            FROM USERVIEW
-            NATURAL JOIN USERRATING
-            WHERE MOVIEID IN
-                (SELECT DISTINCT(MOVIEID) FROM LTCARBON.CAST
-                NATURAL JOIN LTCARBON.DIRECTOR
-                WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)
-            GROUP BY FLOOR(EXTRACT(YEAR FROM to_date('1970-01-01', 'YYYY-MM-DD') + VIEWDATE / 86400)/5)
-            ORDER BY PERIOD`;
-        }
+          GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
+          ORDER BY PERIOD`;
     }
+  }
 
-    executeQueryAndRespond(query, [], res);
+  executeQueryAndRespond(query, [], res);
 });
 
 // Get person's top genres' data
