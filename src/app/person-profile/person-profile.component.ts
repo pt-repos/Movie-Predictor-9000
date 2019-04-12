@@ -7,26 +7,17 @@ import { PersonService } from '../person.service';
 import { Person } from '../person';
 import { Movie } from '../movie';
 
-// export interface MovieDetail {
-//   movieid: number;
-//   title: string;
-//   role: string;
-//   revenue: number;
-//   avg_rating: number;
-//   releasedate: string;
-// }
-
 export interface Trend {
   value: number;
   period: string;
 }
 
-// export interface Genre {
-//   id: number;
-//   name: string;
-//   popularity: number;
-//   mcount: number;
-// }
+export interface Pairing {
+  fullname: string;
+  pid: number;
+  total_rev: number;
+  num_movies: number;
+}
 
 @Component({
   selector: 'app-person-profile',
@@ -36,12 +27,15 @@ export interface Trend {
 export class PersonProfileComponent implements OnInit {
 
   person: Person;
-  topMovies: Movie[];
+  selectedPairing: Pairing;
+  // topMovies: Movie[];
   topMoviesColumns: string[];
-  topMoviesDataSource: MatTableDataSource<Movie>;
+  topMovies = new MatTableDataSource<Movie>([]);
+  successfulPairingsColumns = ['fullname', 'total_rev', 'num_movies'];
+  successfulPairings = new MatTableDataSource<Pairing>([]);
+  moviesWithSelectedPairing = new MatTableDataSource<Movie>([]);
   topMoviesCriteria = 'popularity';
   trendCriteria = 'popularity';
-  show = false;
   trendChart = {
     type: 'line',
     data: [{ data: [], label: '', fill: false }],
@@ -91,6 +85,7 @@ export class PersonProfileComponent implements OnInit {
         this.getGenresData();
         this.getTopMovies();
         this.getPopularityTrend();
+        this.getSuccessfulPairings();
       });
   }
 
@@ -99,9 +94,9 @@ export class PersonProfileComponent implements OnInit {
       .getTopMovies(this.person.personid.toString(), this.topMoviesCriteria)
       .toPromise()
       .then(movies => {
-        this.topMovies = movies;
-        this.topMoviesDataSource = new MatTableDataSource<Movie>(this.topMovies);
-        this.topMoviesDataSource.paginator = this.paginator;
+        // this.topMovies = movies;
+        this.topMovies.data = movies;
+        this.topMovies.paginator = this.paginator;
         this.updateTopMoviesColumns();
       });
   }
@@ -128,6 +123,24 @@ export class PersonProfileComponent implements OnInit {
       });
   }
 
+  getSuccessfulPairings(): void {
+    this.personService
+    .getSuccessfulPairings(this.person.personid.toString())
+    .toPromise()
+    .then(pairings => {
+      this.successfulPairings.data = pairings;
+    });
+  }
+
+  getMoviesWithSelectedPairing(): void {
+    this.personService
+    .getMoviesWithSelectedPairing(this.person.personid.toString(), this.selectedPairing.pid.toString())
+    .toPromise()
+    .then(pairings => {
+      this.moviesWithSelectedPairing.data = pairings;
+    });
+  }
+
   updateTopMoviesColumns(): void {
     if (this.topMoviesCriteria === 'rating') {
       this.topMoviesColumns = ['title', 'role', 'avg_rating', 'releasedate'];
@@ -148,6 +161,13 @@ export class PersonProfileComponent implements OnInit {
     this.trendChart.data[0]['data'] = [];
     this.trendChart.labels = [];
     this.getPopularityTrend();
+  }
+
+  changeSelectedPairing(row: Pairing): void {
+    if (row) {
+      this.selectedPairing = row;
+      this.getMoviesWithSelectedPairing();
+    }
   }
 
   setTrendData(trend: Trend[]) {

@@ -221,6 +221,57 @@ router.get('/person/genres', (req, res) => {
   executeQueryAndRespond(query, [], res);
 });
 
+// Get person's successful pairings
+router.get('/person/pairings', (req, res) => {
+  var query =
+    `SELECT FULLNAME, a.* FROM (
+      SELECT DIRECTORID AS PID, SUM(REVENUE) AS TOTAL_REV, COUNT(MOVIEID) AS NUM_MOVIES
+      FROM LTCARBON.MOVIE
+      NATURAL JOIN
+        -- Movies given person acted in and their directors
+        (SELECT MOVIEID, DIRECTORID FROM LTCARBON.DIRECTOR
+        NATURAL JOIN LTCARBON.CAST
+        WHERE ACTORID = ` + req.query.id + ` AND DIRECTORID != ACTORID)
+      WHERE REVENUE > 0
+      GROUP BY (DIRECTORID)
+      UNION
+      SELECT ACTORID AS PID, SUM(REVENUE) AS TOTAL_REV, COUNT(MOVIEID) AS NUM_MOVIES
+      FROM LTCARBON.MOVIE
+      NATURAL JOIN
+        -- Movies given person acted in and their directors
+        (SELECT MOVIEID, ACTORID FROM LTCARBON.DIRECTOR
+        NATURAL JOIN LTCARBON.CAST
+        WHERE DIRECTORID = ` + req.query.id + ` AND DIRECTORID != ACTORID)
+      WHERE REVENUE > 0
+      GROUP BY (ACTORID)
+    ) a
+    JOIN LTCARBON.PERSON p ON a.PID = p.PERSONID
+    ORDER BY TOTAL_REV DESC
+    FETCH FIRST 10 ROWS ONLY`;
+
+  executeQueryAndRespond(query, [], res);
+})
+
+// Get movies with selected pairing
+router.get('/person/pairing/movies', (req, res) => {
+  var query =
+    `SELECT a.* FROM
+      (SELECT MOVIEID, TITLE, REVENUE, RELEASEDATE FROM LTCARBON.MOVIE 
+      NATURAL JOIN LTCARBON.DIRECTOR
+      WHERE DIRECTORID = ` + req.query.id + `) a
+      JOIN LTCARBON.CAST b ON b.MOVIEID = a.MOVIEID
+      WHERE ACTORID = ` + req.query.pairing + `
+    UNION
+    SELECT a.* FROM
+      (SELECT MOVIEID, TITLE, REVENUE, RELEASEDATE FROM LTCARBON.MOVIE 
+      NATURAL JOIN LTCARBON.DIRECTOR
+      WHERE DIRECTORID = ` + req.query.pairing + `) a
+      JOIN LTCARBON.CAST b ON b.MOVIEID = a.MOVIEID
+      WHERE ACTORID = ` + req.query.id;
+
+  executeQueryAndRespond(query, [], res);
+})
+
 // Get movies
 router.get('/movies', (req, res) => {
 
@@ -288,7 +339,7 @@ router.get('/movie/similar', (req, res) => {
           NATURAL JOIN LTCARBON.MOVIEGENRE
           WHERE GENREID NOT IN (` + genres + `)
           ) WHERE MOVIEID <> `+ req.query.id + `
-          ORDER BY POPULARITY DESC
+          ORDER BY dbms_random.value
           FETCH FIRST 30 ROWS ONLY`;
 
         console.log('query: ' + query);

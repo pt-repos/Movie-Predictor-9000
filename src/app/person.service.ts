@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 import { Person } from './person';
 import { Movie } from './movie';
 import { Genre } from './genre';
-import { Trend } from './person-profile/person-profile.component';
+import { Trend, Pairing } from './person-profile/person-profile.component';
 
 @Injectable({
   providedIn: 'root'
@@ -43,6 +43,28 @@ export class PersonService {
     }
     const options = { params: new HttpParams().set('id', id).set('criteria', criteria) };
     return this.http.get('api/person/movies', options)
+      .pipe(
+        map(response => response['data'])
+      );
+  }
+
+  getSuccessfulPairings(id: string): Observable<Pairing[]> {
+    if (!id) {
+      return of();
+    }
+    const options = { params: new HttpParams().set('id', id) };
+    return this.http.get('api/person/pairings', options)
+      .pipe(
+        map(response => response['data'])
+      );
+  }
+
+  getMoviesWithSelectedPairing(id: string, pairing: string): Observable<Movie[]> {
+    if (!id) {
+      return of();
+    }
+    const options = { params: new HttpParams().set('id', id).set('pairing', pairing) };
+    return this.http.get('api/person/pairing/movies', options)
       .pipe(
         map(response => response['data'])
       );
