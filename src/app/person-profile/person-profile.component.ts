@@ -234,12 +234,16 @@ export class PersonProfileComponent implements OnInit {
     const colorName = colorNames[count % colorNames.length];
     const newDataSet = {
       data: [],
-      label: 'Dataset' + count,
+      label: '',
       fill: false,
       periods: [],
       backgroundColor: this.chartColors[colorName],
       borderColor: this.chartColors[colorName]
     };
+
+    newDataSet.label =
+      count === 0 ? this.person.fullname : this.trendChart.form.searchInput.value.fullname;
+
     this.trendChart.data[count] = newDataSet;
     trend.forEach((dataPoint) => {
       this.trendChart.data[count]['data'].push(dataPoint.value);
@@ -260,7 +264,7 @@ export class PersonProfileComponent implements OnInit {
           this.trendChart.labels.forEach((period) => {
             if (period === earliest) { throw BreakException; }
             dataSet['periods'].push(period);
-            dataSet['data'].unshift(0);
+            dataSet['data'].unshift(null);
           });
         } catch (e) { }
         dataSet['periods'].sort((a, b) => a.localeCompare(b));
