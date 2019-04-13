@@ -99,5 +99,4 @@ export class PersonService {
         map(response => response['data'])
       );
   }
-  
 }

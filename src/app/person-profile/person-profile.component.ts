@@ -22,18 +22,6 @@ export interface Pairing {
   num_movies: number;
 }
 
-export interface Trend {
-  value: number;
-  period: string;
-}
-
-export interface Pairing {
-  fullname: string;
-  pid: number;
-  total_rev: number;
-  num_movies: number;
-}
-
 @Component({
   selector: 'app-person-profile',
   templateUrl: './person-profile.component.html',

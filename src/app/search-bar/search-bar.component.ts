@@ -39,5 +39,4 @@ export class SearchBarComponent implements OnInit {
   displayFn(person?: Person): string | undefined {
     return person ? person.fullname : undefined;
   }
-
 }
