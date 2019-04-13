@@ -121,7 +121,7 @@
     </ng-container>
     <ng-container matColumnDef="total_rev">
       <th mat-header-cell *matHeaderCellDef> Total Revenue </th>
-      <td mat-cell *matCellDef="let row"> {{row.total_rev}} </td>
+      <td mat-cell *matCellDef="let row"> {{row.total_rev.toLocaleString('en', {useGrouping:true})}} </td>
     </ng-container>
     <ng-container matColumnDef="num_movies">
       <th mat-header-cell *matHeaderCellDef> Number of Movies </th>

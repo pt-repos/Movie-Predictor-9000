@@ -753,6 +753,71 @@ router.get('/genres', (req, res) => {
     });
 });
 
+router.get('/genres/delta', (req, res) => {
+  var query = 
+    `SELECT newName AS label, 
+    ROUND(ABS(pctNew-pctOld) * SIGN(pctNew-pctOld) * 1000, 2) AS data 
+  FROM
+  --Determine genre BO revenue percentages for last 5 years
+  (SELECT * FROM(
+      (SELECT NewRevenue, RATIO_TO_REPORT(NewRevenue) OVER()  pctNew, newName FROM(
+      (SELECT CAST(AVG(Movie.REVENUE) AS NUMBER (12,0) ) AS NewRevenue,LTCARBON.GENRE.NAME newName  FROM 
+      ((LTCARBON.MOVIE JOIN LTCARBON.MOVIEGENRE 
+          ON LTCARBON.MOVIE.MOVIEID=LTCARBON.MOVIEGENRE.MOVIEID) 
+          JOIN LTCARBON.GENRE ON LTCARBON.GENRE.GENREID=LTCARBON.MOVIEGENRE.GENREID)
+      WHERE RELEASEDATE IS NOT NULL 
+  --       AND ReleaseDate>= to_date('21-01-2017','DD-MM-YYYY')
+          AND EXTRACT(YEAR FROM RELEASEDATE)>= 2014
+         AND Movie.REVENUE <> 0
+      GROUP BY  LTCARBON.GENRE.NAME )))
+  INNER JOIN
+  --Determine genre BO revenue percentages for 5+ years
+    (SELECT OldRevenue, RATIO_TO_REPORT(OldRevenue) OVER ()  pctOld,  oldName FROM(
+          SELECT CAST(AVG(Movie.REVENUE) AS NUMBER (12,0) ) AS OldRevenue, LTCARBON.GENRE.NAME AS oldName  FROM 
+      ((LTCARBON.MOVIE JOIN LTCARBON.MOVIEGENRE 
+          ON LTCARBON.MOVIE.MOVIEID=LTCARBON.MOVIEGENRE.MOVIEID) 
+          JOIN LTCARBON.GENRE ON LTCARBON.GENRE.GENREID=LTCARBON.MOVIEGENRE.GENREID)
+      WHERE RELEASEDATE IS NOT NULL 
+  --       AND ReleaseDate<= to_date('21-01-2017','DD-MM-YYYY')
+          AND EXTRACT(YEAR FROM RELEASEDATE)<= 2014
+         AND Movie.REVENUE <> 0
+      GROUP BY  LTCARBON.GENRE.NAME ))
+  ON newname=oldName)) 
+  ORDER BY data desc`;
+
+  executeQueryAndRespond(query, [], res);
+});
+
+router.get('/genre/monthly', (req, res) => {
+  
+  const param = req.query.name ? req.query.name : 'nil';
+  
+  var query =
+    `SELECT CAST(AVG(Movie.REVENUE) AS NUMBER (12,0) ) AS data,
+    to_char(ReleaseDate, 'MONTH') AS label 
+    FROM
+      (LTCARBON.MOVIE NATURAL JOIN LTCARBON.MOVIEGENRE NATURAL JOIN LTCARBON.GENRE)
+    WHERE RELEASEDATE IS NOT NULL 
+      AND to_char(ReleaseDate, 'yyyy')>= 2010 
+      AND to_char(ReleaseDate, 'yyyy') <= 2019
+      AND LOWER(NAME) = '` + param.toLowerCase() + `'
+      AND Movie.REVENUE <> 0
+    GROUP BY EXTRACT(MONTH FROM ReleaseDate), to_char(ReleaseDate, 'MONTH')
+    ORDER BY EXTRACT(MONTH FROM ReleaseDate)`;
+
+  console.log('!@!@ query: ' + query);
+
+  executeQueryAndRespond(query, [], res);
+});
+
+router.get('/genre', (req, res) => {
+  var query =
+    `SELECT GENREID AS ID, NAME FROM LTCATBON.GENRE
+    WHERE GENREID = ` + req.query.id ? req.query.id : -1;
+
+    executeQueryAndRespond(query, [], res);
+});
+
 // Note: connections should always be released when not needed
 function doRelease(connection) {
     connection.close(
