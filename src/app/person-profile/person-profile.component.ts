@@ -48,6 +48,10 @@ export class PersonProfileComponent implements OnInit {
     count: 0,
     legend: true,
     options: {
+      title: {
+        display: true,
+        text: 'Trends'
+      },
       scaleShowVerticalLines: true,
       responsive: true
     },
@@ -62,6 +66,10 @@ export class PersonProfileComponent implements OnInit {
     labels: [],
     legend: true,
     options: {
+      title: {
+        display: true,
+        text: 'Top Genres'
+      },
       scaleShowVerticalLines: true,
       responsive: true,
       scale: {
