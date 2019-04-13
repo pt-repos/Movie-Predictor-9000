@@ -426,7 +426,7 @@ router.get('/predict', (req, res) => {
 	                    FROM LTCARBON.MOVIE m
 	                    JOIN LTCARBON.MOVIEGENRE mg on m.movieid = mg.movieid
 	                    JOIN LTCARBON.GENRE g on mg.genreid = g.genreid
-	                    JOIN DIRECTOR d on d.movieid = m.movieid
+	                    JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                    WHERE g.name = :genre_name
 	                        AND upper(p2.fullname) LIKE upper(:director_name)
@@ -444,7 +444,7 @@ router.get('/predict', (req, res) => {
 	                    FROM LTCARBON.MOVIE m
 	                    JOIN LTCARBON.CAST c on c.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p1 on p1.personid = c.actorid
-	                    JOIN DIRECTOR d on d.movieid = m.movieid
+	                    JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                    WHERE upper(p1.fullname) LIKE upper(:actor_name)
 	                        AND upper(p2.fullname) LIKE upper(:director_name)
@@ -460,7 +460,7 @@ router.get('/predict', (req, res) => {
 	                    -- director & date
 	                    SELECT AVG(m.revenue) as avg_revenue
 	                    FROM LTCARBON.MOVIE m
-	                    JOIN DIRECTOR d on d.movieid = m.movieid
+	                    JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                    WHERE upper(p2.fullname) LIKE upper(:director_name)
 	                        AND EXTRACT(month from m.releasedate) = :release_month
@@ -478,7 +478,7 @@ router.get('/predict', (req, res) => {
 	                    JOIN LTCARBON.GENRE g on mg.genreid = g.genreid
 	                    JOIN LTCARBON.CAST c on c.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p1 on p1.personid = c.actorid
-	                    JOIN DIRECTOR d on d.movieid = m.movieid
+	                    JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                    WHERE g.name = :genre_name
 	                        OR upper(p2.fullname) LIKE upper(:director_name)
@@ -503,7 +503,7 @@ router.get('/predict', (req, res) => {
 	                                FROM LTCARBON.MOVIE m
 	                                JOIN LTCARBON.MOVIEGENRE mg on m.movieid = mg.movieid
 	                                JOIN LTCARBON.GENRE g on mg.genreid = g.genreid
-	                                JOIN DIRECTOR d on d.movieid = m.movieid
+	                                JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                                WHERE g.name = :genre_name
 	                                    AND upper(p2.fullname) LIKE upper(:director_name)
@@ -521,7 +521,7 @@ router.get('/predict', (req, res) => {
 	                                FROM LTCARBON.MOVIE m
 	                                JOIN LTCARBON.CAST c on c.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p1 on p1.personid = c.actorid
-	                                JOIN DIRECTOR d on d.movieid = m.movieid
+	                                JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                                WHERE upper(p1.fullname) LIKE upper(:actor_name)
 	                                    AND upper(p2.fullname) LIKE upper(:director_name)
@@ -537,7 +537,7 @@ router.get('/predict', (req, res) => {
 	                                -- director & date
 	                                SELECT AVG(m.revenue) as avg_revenue
 	                                FROM LTCARBON.MOVIE m
-	                                JOIN DIRECTOR d on d.movieid = m.movieid
+	                                JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                                WHERE upper(p2.fullname) LIKE upper(:director_name)
 	                                    AND EXTRACT(month from m.releasedate) = :release_month
@@ -559,7 +559,7 @@ router.get('/predict', (req, res) => {
 	                    JOIN LTCARBON.GENRE g on mg.genreid = g.genreid
 	                    JOIN LTCARBON.CAST c on c.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p1 on p1.personid = c.actorid
-	                    JOIN DIRECTOR d on d.movieid = m.movieid
+	                    JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                    WHERE g.name = :genre_name
 	                        OR upper(p1.fullname) LIKE upper(:actor_name)
@@ -584,7 +584,7 @@ router.get('/predict', (req, res) => {
 	                                FROM LTCARBON.MOVIE m
 	                                JOIN LTCARBON.MOVIEGENRE mg on m.movieid = mg.movieid
 	                                JOIN LTCARBON.GENRE g on mg.genreid = g.genreid
-	                                JOIN DIRECTOR d on d.movieid = m.movieid
+	                                JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                                WHERE g.name = :genre_name
 	                                    AND upper(p2.fullname) LIKE upper(:director_name)
@@ -602,7 +602,7 @@ router.get('/predict', (req, res) => {
 	                                FROM LTCARBON.MOVIE m
 	                                JOIN LTCARBON.CAST c on c.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p1 on p1.personid = c.actorid
-	                                JOIN DIRECTOR d on d.movieid = m.movieid
+	                                JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                                WHERE upper(p1.fullname) LIKE upper(:actor_name)
 	                                    AND upper(p2.fullname) LIKE upper(:director_name)
@@ -618,7 +618,7 @@ router.get('/predict', (req, res) => {
 	                                -- director & date
 	                                SELECT AVG(m.revenue) as avg_revenue
 	                                FROM LTCARBON.MOVIE m
-	                                JOIN DIRECTOR d on d.movieid = m.movieid
+	                                JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                                JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                                WHERE upper(p2.fullname) LIKE upper(:director_name)
 	                                    AND EXTRACT(month from m.releasedate) = :release_month
@@ -638,7 +638,7 @@ router.get('/predict', (req, res) => {
 	                JOIN LTCARBON.GENRE g on mg.genreid = g.genreid
 	                JOIN LTCARBON.CAST c on c.movieid = m.movieid
 	                JOIN LTCARBON.PERSON p1 on p1.personid = c.actorid
-	                JOIN DIRECTOR d on d.movieid = m.movieid
+	                JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                WHERE( g.name = :genre_name
 	                    OR upper(p1.fullname) LIKE upper(:actor_name)
@@ -651,7 +651,7 @@ router.get('/predict', (req, res) => {
 	                    JOIN LTCARBON.GENRE g on mg.genreid = g.genreid
 	                    JOIN LTCARBON.CAST c on c.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p1 on p1.personid = c.actorid
-	                    JOIN DIRECTOR d on d.movieid = m.movieid
+	                    JOIN LTCARBON.DIRECTOR d on d.movieid = m.movieid
 	                    JOIN LTCARBON.PERSON p2 on p2.personid = d.directorid
 	                    WHERE( g.name = :genre_name
 	                        OR upper(p1.fullname) LIKE upper(:actor_name)
