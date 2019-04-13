@@ -62,7 +62,7 @@
     <mat-radio-button value="popularity">Popularity</mat-radio-button>
   </mat-radio-group>
   <br />
-  <div *ngIf="trendCriteria === 'rating'">
+  <div *ngIf="trendCriteria === 'rating' || trendCriteria === 'popularity'">
     Optional filters:
     <mat-checkbox [(ngModel)]="chartFilters.filter">Filter</mat-checkbox>
     <div *ngIf="chartFilters.filter">

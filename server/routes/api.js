@@ -169,13 +169,35 @@ router.get('/person/trends', (req, res) => {
           TO_CHAR(FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5) * 5 + 5 - 1)
           AS PERIOD
         FROM LTCARBON.MOVIE
-        WHERE MOVIEID IN
-          (SELECT MOVIEID FROM LTCARBON.CAST
-          NATURAL JOIN LTCARBON.DIRECTOR
-          WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)
-        AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL
-        GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
-        ORDER BY PERIOD`;
+        WHERE MOVIEID IN `;
+
+        if (req.query.filter === 'false') {
+          query +=
+            `(SELECT MOVIEID FROM LTCARBON.CAST
+            NATURAL JOIN LTCARBON.DIRECTOR
+            WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `)`;
+        }
+        else {
+          const ageu = req.query.ageu ? req.query.ageu : 0;
+          const agel = req.query.agel ? req.query.agel : 100;
+          var gender_filter = ``;
+          if (req.query.gender) {
+            gender_filter = `GENDER = '` + req.query.gender + `' AND`;
+          }
+          query +=
+            `(SELECT MOVIEID FROM LTCARBON.CAST
+              NATURAL JOIN LTCARBON.DIRECTOR
+              WHERE ACTORID = ` + req.query.id + ` OR DIRECTORID = ` + req.query.id + `
+              INTERSECT
+              SELECT MOVIEID FROM USERVIEW NATURAL JOIN MLENSUSER WHERE `
+              + gender_filter +
+              ` YEAROFBIRTH BETWEEN (EXTRACT(YEAR FROM SYSDATE) - ` + ageu + `)
+              AND (EXTRACT(YEAR FROM SYSDATE) - `+ agel + `))`;
+        }
+        query +=
+          `AND EXTRACT(YEAR FROM RELEASEDATE) IS NOT NULL
+          GROUP BY FLOOR(EXTRACT(YEAR FROM RELEASEDATE)/5)
+          ORDER BY PERIOD`;
     }
     // Avg ratings trend grouped into year periods
     else if (req.query.criteria === 'rating') {
