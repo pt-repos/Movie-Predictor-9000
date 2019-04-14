@@ -85,10 +85,6 @@
     </div>
     <button mat-raised-button color="primary" (click)="updateTrendChart()">Update..</button>
   </div>
-  <!-- <div *ngIf="chartFilters.filter && chartFilters.age">
-    <input type="text" class="tiny-text" [(ngModel)]="chartFilters.agel" placeholder="Lower age limit" /> &nbsp;
-    <input type="text" class="tiny-text" [(ngModel)]="chartFilters.ageu" placeholder="Upper age limit" />
-  </div> -->
   <canvas baseChart [chartType]="trendChart.type" [datasets]="trendChart.data" [labels]="trendChart.labels"
     [legend]="trendChart.legend" [options]="trendChart.options">
   </canvas>
@@ -121,7 +117,7 @@
     </ng-container>
     <ng-container matColumnDef="total_rev">
       <th mat-header-cell *matHeaderCellDef> Total Revenue </th>
-      <td mat-cell *matCellDef="let row"> {{row.total_rev.toLocaleString('en', {useGrouping:true})}} </td>
+      <td mat-cell *matCellDef="let row"> ${{row.total_rev.toLocaleString('en', {useGrouping:true})}} </td>
     </ng-container>
     <ng-container matColumnDef="num_movies">
       <th mat-header-cell *matHeaderCellDef> Number of Movies </th>

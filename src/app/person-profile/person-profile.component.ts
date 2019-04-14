@@ -52,6 +52,16 @@ export class PersonProfileComponent implements OnInit {
         display: true,
         text: 'Trends'
       },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true,
+            callback: function(value, index, values) {
+              return value.toLocaleString('en', { useGrouping: true });
+            }
+          }
+        }]
+      },
       scaleShowVerticalLines: true,
       responsive: true
     },
@@ -268,29 +278,29 @@ export class PersonProfileComponent implements OnInit {
     this.trendChart.count += 1;
   }
 
-routeToMovieDetail(row): void {
-  if(row) {
-    console.log(row);
-    this.router.navigateByUrl('/detail/' + row.movieid);
+  routeToMovieDetail(row): void {
+    if (row) {
+      console.log(row);
+      this.router.navigateByUrl('/detail/' + row.movieid);
+    }
   }
-}
 
-getFilteredOptions() {
-  this.trendChart.form.searchInput.valueChanges
-    .pipe(
-      startWith(''),
-      debounceTime(300),
-      switchMap(name => this.personService.getPersons({ name: name }))
-    ).subscribe(options => this.trendChart.form.filteredOptions = <any[]>options);
-}
-
-displayFn(person ?: Person): string | undefined {
-  return person ? person.fullname : undefined;
-}
-
-addDataSet() {
-  if (this.trendChart.form.searchInput.value) {
-    this.getPopularityTrend(this.trendChart.form.searchInput.value.personid);
+  getFilteredOptions() {
+    this.trendChart.form.searchInput.valueChanges
+      .pipe(
+        startWith(''),
+        debounceTime(300),
+        switchMap(name => this.personService.getPersons({ name: name }))
+      ).subscribe(options => this.trendChart.form.filteredOptions = <any[]>options);
   }
-}
+
+  displayFn(person?: Person): string | undefined {
+    return person ? person.fullname : undefined;
+  }
+
+  addDataSet() {
+    if (this.trendChart.form.searchInput.value) {
+      this.getPopularityTrend(this.trendChart.form.searchInput.value.personid);
+    }
+  }
 }

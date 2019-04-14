@@ -12,22 +12,20 @@
 <button mat-raised-button color="primary" (click)="setGenre()">Analyse</button>
 <hr>
 <div>
-  <h3>General Stats:</h3>
   <p>Top Genres:</p>
   <br />
-  <canvas baseChart [chartType]="deltaChart.type" [datasets]="deltaChart.dataset" 
-      [labels]="deltaChart.labels" [legend]="deltaChart.legend" [options]="deltaChart.options">
+  <canvas baseChart [chartType]="deltaChart.type" [datasets]="deltaChart.dataset" [labels]="deltaChart.labels"
+    [legend]="deltaChart.legend" [options]="deltaChart.options">
   </canvas>
 </div>
 <hr>
 <div *ngIf="genre">
   <h2>{{genre.name}}</h2>
-</div>
-<br />
-<div>
+  <div>
     <p>Monthly performance:</p>
     <br />
     <canvas baseChart [chartType]="monthlyChart.type" [datasets]="monthlyChart.dataset" [labels]="monthlyChart.labels"
-        [legend]="monthlyChart.legend" [options]="monthlyChart.options">
+      [legend]="monthlyChart.legend" [options]="monthlyChart.options">
     </canvas>
+  </div>
 </div>

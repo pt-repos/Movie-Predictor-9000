@@ -64,8 +64,19 @@ export class GenreDetailComponent implements OnInit {
         display: true,
         text: 'Monthly Average Performance over last 5 years'
       },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true,
+            callback: function (value, index, values) {
+              value = value.toLocaleString('en', { useGrouping: true });
+              return '$' + value;
+            }
+          }
+        }]
+      },
       scaleShowVerticalLines: false,
-      responsive: true
+      responsive: true,
     },
     labels: [],
     dataset: [{
@@ -102,7 +113,7 @@ export class GenreDetailComponent implements OnInit {
 
   getMonthlyTrend(): void {
     this.genreService
-      .getMonthlyTrend({name: this.genre.name})
+      .getMonthlyTrend({ name: this.genre.name })
       .toPromise()
       .then(trend => this.setMonthlyData(trend));
   }
